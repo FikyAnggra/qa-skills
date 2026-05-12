@@ -1,0 +1,49 @@
+{
+  "registry": "tim-kamu/qa-skills",
+  "version": "1.0.0",
+  "lastUpdated": "2026-05-12",
+  "skills": [
+    {
+      "name": "qa-explorer",
+      "displayName": "QA Explorer",
+      "version": "1.0.0",
+      "description": "Generate test case cerdas dari dokumen PRD (mode pre-dev, output @unverified) atau dari eksplorasi browser langsung (mode post-dev, output @verified). Mendukung gap analysis otomatis antar sesi. Output dalam format Gherkin/BDD, tabel, plain steps, atau kode Playwright.",
+      "icon": "🔍",
+      "category": "testing",
+      "tags": ["qa", "testing", "playwright", "gherkin", "bdd", "test-case", "exploratory-testing", "prd-analysis"],
+      "modes": [
+        {
+          "name": "pre-dev",
+          "trigger": "Berikan dokumen PRD/user story/spesifikasi",
+          "output": "*.feature (@unverified) + qa-spec-[nama].json"
+        },
+        {
+          "name": "post-dev",
+          "trigger": "Berikan URL aplikasi",
+          "output": "*.feature (@verified) + qa-spec-[nama].json + gap-report (opsional)"
+        },
+        {
+          "name": "gap-only",
+          "trigger": "Berikan 2 file test case untuk dibandingkan",
+          "output": "gap-report-[nama]-[tanggal].md"
+        }
+      ],
+      "requires": {
+        "mcp": {
+          "playwright": {
+            "required": false,
+            "usedFor": "Mode 2 browser automation",
+            "fallback": "bundled scripts (node scripts/inventory.js)"
+          }
+        }
+      },
+      "path": "skills/qa-explorer",
+      "mainFile": "skills/qa-explorer/SKILL.md",
+      "examples": [
+        "Buat test case dari PRD login ini: [paste PRD]",
+        "Explore https://app.example.com dan generate test cases",
+        "Bandingkan gap antara login-predev.feature dan login-verified.feature"
+      ]
+    }
+  ]
+}

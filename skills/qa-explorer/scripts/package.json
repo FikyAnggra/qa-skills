@@ -1,0 +1,18 @@
+{
+  "name": "qa-explorer-scripts",
+  "version": "1.0.0",
+  "description": "Bundled Playwright scripts for qa-explorer skill (fallback when MCP not available)",
+  "private": true,
+  "scripts": {
+    "phase1": "node inventory.js",
+    "phase2": "node happy-path.js",
+    "phase4": "node reporter.js",
+    "full-run": "node inventory.js --url $URL && node happy-path.js --url $URL --inventory inventory-output.json && node reporter.js --inventory inventory-output.json --results results.json --name $FEATURE"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.44.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

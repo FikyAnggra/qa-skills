@@ -1,0 +1,43 @@
+{
+  "name": "qa-skills",
+  "version": "1.0.0",
+  "description": "QA Testing skills untuk Claude Code, Cowork, dan platform AI coding lainnya. Meliputi qa-explorer: generate test case dari PRD (pre-dev) dan dari eksplorasi browser langsung (post-dev).",
+  "keywords": [
+    "qa",
+    "testing",
+    "test-case",
+    "playwright",
+    "gherkin",
+    "bdd",
+    "claude-skills",
+    "ai-testing",
+    "exploratory-testing"
+  ],
+  "author": "tim-kamu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tim-kamu/qa-skills.git"
+  },
+  "homepage": "https://github.com/tim-kamu/qa-skills",
+  "bugs": {
+    "url": "https://github.com/tim-kamu/qa-skills/issues"
+  },
+  "bin": {
+    "qa-skills": "./bin/install.js"
+  },
+  "scripts": {
+    "install-skill": "node bin/install.js",
+    "install:qa-explorer": "node bin/install.js --skill qa-explorer",
+    "test": "echo 'No unit tests yet — run skill integration tests manually'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    ".claude-plugin/",
+    "README.md"
+  ]
+}

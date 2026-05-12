@@ -1,0 +1,34 @@
+{
+  "name": "qa-skills",
+  "version": "1.0.0",
+  "description": "QA Testing skills: generate test case dari PRD (pre-dev) dan dari eksplorasi browser (post-dev). Termasuk gap analysis otomatis antar sesi.",
+  "author": "tim-kamu",
+  "icon": "🧪",
+  "category": "testing",
+  "tags": ["qa", "testing", "playwright", "gherkin", "bdd", "test-case"],
+  "skills": [
+    {
+      "name": "qa-explorer",
+      "path": "skills/qa-explorer",
+      "description": "Generate test case dari dokumen PRD atau eksplorasi browser langsung. Support 3 mode: pre-dev, post-dev, dan gap analysis.",
+      "version": "1.0.0"
+    }
+  ],
+  "mcpDependencies": [
+    {
+      "name": "playwright",
+      "required": false,
+      "description": "Browser automation untuk Mode 2 (post-dev). Optional — fallback ke bundled scripts jika tidak tersedia.",
+      "installCommand": "claude mcp add playwright npx @playwright/mcp@latest"
+    }
+  ],
+  "compatibility": {
+    "claudeCode": ">=1.0.0",
+    "cowork": ">=1.0.0"
+  },
+  "links": {
+    "repository": "https://github.com/tim-kamu/qa-skills",
+    "documentation": "https://github.com/tim-kamu/qa-skills#readme",
+    "issues": "https://github.com/tim-kamu/qa-skills/issues"
+  }
+}
