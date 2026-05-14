@@ -8,14 +8,38 @@ Semua output diberi tag `@unverified` untuk menandai bahwa test case ini belum d
 
 ## Langkah-Langkah
 
-### Langkah 1 — Konfirmasi Nama Fitur
+### Langkah 1 — Konfirmasi Nama Fitur dan Format Output
 
 Sebelum memulai, tanyakan (atau ekstrak dari dokumen):
-- **Nama fitur** yang akan dijadikan basis nama file (misal: `login`, `checkout`, `user-registration`)
-- **Format output** yang diinginkan (default: Gherkin; alternatif: table, steps, playwright)
 
+**A. Nama Fitur**  
 Jika nama fitur bisa diinfer dari dokumen, konfirmasi dulu ke user:
 > "Saya akan buat test case untuk fitur **[nama]**. Benar?"
+
+**B. Format Output** *(WAJIB — jika belum disebutkan user)*  
+Tanyakan format output yang diinginkan:
+
+```
+Test case-nya mau dalam format apa? Pilihan yang tersedia:
+
+1. 📊 Excel (.xlsx)
+   Format tabel profesional — Test Case Information, Test Case Status,
+   dan Test Case Table. Cocok untuk tracking & kolaborasi tim QA.
+
+2. 📝 Word (.docx)
+   Dokumen formal — Test Case Information, Source, Application Overview,
+   Test Case Status, dan Test Case List bernomor. Cocok untuk review stakeholder.
+
+3. 📄 Markdown (.md)
+   Format teks ringan — struktur sama seperti Word, cocok untuk developer
+   atau dokumentasi di GitHub/Notion.
+
+Ketik angka (1/2/3) atau nama formatnya.
+```
+
+> **Exception:** Jika user sudah menyebut format secara eksplisit, langsung gunakan tanpa bertanya.
+
+**Jangan lanjut ke Langkah 2 sebelum format dipilih.**
 
 ---
 
@@ -73,50 +97,37 @@ Setiap business rule yang ditemukan di Langkah 2B harus punya minimal 1 test sce
 
 ---
 
-### Langkah 4 — Tulis Gherkin (Format Default)
+### Langkah 4 — Generate Output Sesuai Format yang Dipilih
 
-Gunakan template dari `output-format.md`. Penting:
+Gunakan format yang dipilih user di Langkah 1:
 
-```gherkin
-@unverified @pre-dev
-Feature: [Nama Fitur dari Dokumen]
-  Sebagai [aktor]
-  Saya ingin [tujuan]
-  Sehingga [nilai bisnis]
+#### Jika Excel (`.xlsx`):
+Generate test case dalam format **3 sections**:
+1. **TEST CASE INFORMATION** — metadata dokumen
+2. **TEST CASE STATUS** — ringkasan status (semua `untested` di awal)
+3. **TEST CASE TABLE** — tabel dengan kolom: TC ID | Scenario | Summary | Priority | Pre-Conditions | Test Step | Test Data | Expected Result | Actual Result | Test Case Status | Automation Status | Notes
 
-  Background:
-    Given [pre-kondisi yang berlaku untuk semua scenario]
+Lihat template lengkap di `output-format.md#excel-format`.
 
-  @happy-path
-  Scenario: [Deskripsi singkat alur sukses]
-    Given [kondisi awal]
-    When [aksi user]
-    Then [hasil yang diharapkan]
-    And [hasil tambahan jika ada]
+#### Jika Word (`.docx`) atau Markdown (`.md`):
+Generate test case dalam format **5 sections**:
+1. **TEST CASE INFORMATION** — metadata dokumen
+2. **SOURCE** — asal test case (nama dokumen PRD, mode pre-dev @unverified)
+3. **APPLICATION OVERVIEW** — deskripsi aplikasi yang ditest (dari dokumen)
+4. **TEST CASE STATUS** — ringkasan status (semua `untested` di awal)
+5. **TEST CASE LIST** — daftar test case bernomor (1, 2, 3, ...)
 
-  @negative
-  Scenario: [Deskripsi kondisi gagal]
-    Given [kondisi awal]
-    When [aksi user dengan input tidak valid]
-    Then [pesan error atau behavior yang diharapkan]
+Lihat template lengkap di `output-format.md#md-word-format`.
 
-  @edge-case @assumption
-  Scenario: [Deskripsi edge case — ditandai assumption jika tidak eksplisit di dok]
-    Given [kondisi awal]
-    When [kondisi batas]
-    Then [hasil yang diasumsikan]
+> Untuk Word (`.docx`), gunakan skill `docx` untuk membuat file Word yang proper.
+
+#### Format TC ID:
+`TC0001`, `TC0002`, ... (4 digit, auto-increment)
+
+#### Tag untuk qa-spec JSON (internal):
 ```
-
-**Tag yang digunakan:**
-| Tag | Makna |
-|---|---|
-| `@unverified` | Belum divalidasi ke produk nyata |
-| `@pre-dev` | Dibuat dari dokumen (Mode 1) |
-| `@happy-path` | Alur sukses utama |
-| `@negative` | Test kondisi gagal/error |
-| `@edge-case` | Kondisi batas atau tidak umum |
-| `@assumption` | Asumsi karena tidak ada di dokumen |
-| `@high` `@medium` `@low` | Priority test case |
+@unverified @pre-dev @happy-path / @negative / @edge-case / @assumption
+```
 
 ---
 
@@ -132,12 +143,13 @@ Format file:
   "source": "pre-dev",
   "created_at": "[ISO timestamp]",
   "document_source": "[nama file atau deskripsi singkat dokumen]",
+  "output_format": "[xlsx / docx / md]",
   "scenarios": [
     {
-      "id": "TC-001",
+      "id": "TC0001",
       "title": "[judul scenario]",
       "tags": ["happy-path"],
-      "priority": "high",
+      "priority": "P1 - High",
       "steps": {
         "given": "[kondisi awal]",
         "when": "[aksi]",
@@ -169,6 +181,7 @@ Setelah semua selesai, tampilkan summary kepada user:
 ✅ Mode 1 (Pre-Dev) selesai
 
 📄 Dokumen dianalisis: [nama/deskripsi dokumen]
+📊 Format output: [Excel / Word / Markdown]
 🔢 Total scenarios: [N]
    • Happy path: [N]
    • Negative: [N]  
@@ -176,7 +189,7 @@ Setelah semua selesai, tampilkan summary kepada user:
    • Asumsi: [N]
 
 📁 File yang dibuat:
-   • [nama]-unverified.feature
+   • [nama]-tc.[xlsx/docx/md]
    • qa-spec-[nama].json
 
 ⚠️  Asumsi yang dibuat (perlu konfirmasi):
@@ -195,6 +208,7 @@ Setelah semua selesai, tampilkan summary kepada user:
 
 1. **Jangan buka browser atau akses URL apapun** di Mode 1. Test case murni dari analisis dokumen.
 2. **Tandai semua asumsi** — jangan diam-diam mengasumsikan behavior yang tidak ada di dokumen.
-3. **Gunakan bahasa dokumen** — jika dokumen dalam Bahasa Indonesia, tulis Gherkin dalam BI. Jika Inggris, pakai Inggris.
-4. **ID test case harus unik** — format `TC-[nomor 3 digit]` (TC-001, TC-002, dst).
+3. **Gunakan bahasa dokumen** — jika dokumen dalam Bahasa Indonesia, tulis test case dalam BI. Jika Inggris, pakai Inggris.
+4. **ID test case harus unik** — format `TC0001`, `TC0002`, dst (4 digit).
 5. **Simpan qa-spec JSON** — ini kunci gap analysis di sesi berikutnya.
+6. **Format output menentukan struktur file** — Excel: 3 sections, Word/MD: 5 sections dengan numbered list.

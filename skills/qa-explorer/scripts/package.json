@@ -7,10 +7,13 @@
     "phase1": "node inventory.js",
     "phase2": "node happy-path.js",
     "phase4": "node reporter.js",
-    "full-run": "node inventory.js --url $URL && node happy-path.js --url $URL --inventory inventory-output.json && node reporter.js --inventory inventory-output.json --results results.json --name $FEATURE"
+    "phase4:table": "node reporter.js --format table",
+    "phase4:xlsx": "node reporter.js --format xlsx",
+    "xlsx": "node xlsx-generator.js"
   },
   "dependencies": {
-    "@playwright/test": "^1.44.0"
+    "@playwright/test": "^1.44.0",
+    "exceljs": "^4.4.0"
   },
   "engines": {
     "node": ">=18.0.0"

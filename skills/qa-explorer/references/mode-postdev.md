@@ -33,10 +33,35 @@ Tanyakan (atau inferkan dari context):
 1. **URL** aplikasi yang akan ditest
 2. **Nama fitur** yang difokuskan (atau "semua halaman" jika tidak spesifik)
 3. **Apakah butuh login?** → jika ya, minta kredensial test atau cookie
+4. **Format output** *(WAJIB — jika belum disebutkan user)*
+
+Untuk format output, tanyakan:
+
+```
+Test case-nya mau dalam format apa? Pilihan yang tersedia:
+
+1. 📊 Excel (.xlsx)
+   Format tabel profesional — Test Case Information, Test Case Status,
+   dan Test Case Table. Cocok untuk tracking & kolaborasi tim QA.
+
+2. 📝 Word (.docx)
+   Dokumen formal — Test Case Information, Source, Application Overview,
+   Test Case Status, dan Test Case List bernomor. Cocok untuk review stakeholder.
+
+3. 📄 Markdown (.md)
+   Format teks ringan — struktur sama seperti Word, cocok untuk developer
+   atau dokumentasi di GitHub/Notion.
+
+Ketik angka (1/2/3) atau nama formatnya.
+```
+
+> **Exception:** Jika user sudah menyebut format secara eksplisit, langsung gunakan tanpa bertanya.
+
+**Jangan mulai eksplorasi browser sebelum format dipilih.**
 
 ### Cek qa-spec Existing
 
-Sebelum memulai eksplorasi, cek apakah ada file `qa-spec-*.json` di direktori kerja:
+Setelah format dipilih, cek apakah ada file `qa-spec-*.json` di direktori kerja:
 
 ```
 Ada qa-spec-[nama].json?
@@ -68,7 +93,6 @@ Jika user memberikan cookie string:
 ```javascript
 // Via MCP Playwright evaluate
 document.cookie = "[cookie string dari user]";
-// Atau set via browser context sebelum navigate
 ```
 
 ### Option C: Token di Header
@@ -86,10 +110,7 @@ Tujuan: Memetakan semua elemen interaktif dan halaman yang ada.
 
 ```
 1. Navigate ke URL target
-2. Tunggu halaman fully loaded:
-   - Wait for network idle (tidak ada request aktif selama 500ms)
-   - Wait for DOM ready
-   - Jika SPA: tunggu loading spinner hilang
+2. Tunggu halaman fully loaded
 3. Screenshot halaman awal
 4. Get visible text untuk context
 ```
@@ -149,16 +170,6 @@ Jalankan alur utama yang paling umum dilakukan user:
    - Response / feedback dari sistem (toast, modal, redirect)
    - Data yang diperlukan (format field, validasi client-side)
 
-### Contoh Flow yang Dicari:
-```
-Login flow → Dashboard
-Create/Add flow → Konfirmasi
-Edit flow → Update berhasil
-Delete flow → Konfirmasi hapus
-Search/Filter → Hasil ditampilkan
-Checkout/Submit form → Success state
-```
-
 ---
 
 ## Fase 4 — Negative Testing (Phase 3)
@@ -166,19 +177,16 @@ Checkout/Submit form → Success state
 Uji kondisi error dan validasi:
 
 ### 4.1 Form Validation
-Untuk setiap form yang ditemukan, uji:
 ```
 □ Submit form kosong → pesan error muncul?
-□ Format tidak valid (email tanpa @, angka di field nama) → validasi?
+□ Format tidak valid → validasi?
 □ Input terlalu panjang → cut off atau error?
-□ Special characters / SQL injection string → aman?
 □ Required vs optional fields → behavior benar?
 ```
 
 ### 4.2 Authentication/Authorization
 ```
 □ Akses halaman protected tanpa login → redirect ke login?
-□ Akses resource orang lain → 403/404?
 □ Session expired → behavior?
 □ Wrong credentials → pesan error yang tepat?
 ```
@@ -186,55 +194,37 @@ Untuk setiap form yang ditemukan, uji:
 ### 4.3 Boundary Testing
 ```
 □ Upload file terlalu besar → error message?
-□ Pagination di halaman terakhir → next button disabled?
 □ Empty state (list kosong) → tampilan?
 □ Maximum character limit → pesan atau soft limit?
 ```
 
 ---
 
-## Fase 5 — Generate Test Case @verified
+## Fase 5 — Generate Output Sesuai Format yang Dipilih
 
-Berdasarkan semua yang ditemukan di Fase 2-4, tulis test case:
+Berdasarkan semua yang ditemukan di Fase 2-4, buat test case sesuai format pilihan user:
 
-```gherkin
-@verified @post-dev
-Feature: [Nama Fitur dari Eksplorasi]
-  Berdasarkan eksplorasi pada: [URL]
-  Tanggal eksplorasi: [tanggal]
+#### Jika Excel (`.xlsx`):
+Generate test case dalam format **3 sections**:
+1. **TEST CASE INFORMATION** — metadata (Feature Name, URL yang dieksplor, Created By, Created Date)
+2. **TEST CASE STATUS** — ringkasan status (semua `untested` di awal)
+3. **TEST CASE TABLE** — tabel dengan kolom: TC ID | Scenario | Summary | Priority | Pre-Conditions | Test Step | Test Data | Expected Result | Actual Result | Test Case Status | Automation Status | Notes
 
-  Background:
-    Given user sudah berada di [URL]
-    And browser dalam kondisi [state awal]
+Lihat template lengkap di `output-format.md#excel-format`.
 
-  @happy-path @verified
-  Scenario: [Flow sukses yang diobservasi]
-    Given [kondisi yang benar-benar ada di UI]
-    When [aksi yang benar-benar bisa dilakukan]
-    Then [hasil yang benar-benar terjadi]
+#### Jika Word (`.docx`) atau Markdown (`.md`):
+Generate test case dalam format **5 sections**:
+1. **TEST CASE INFORMATION** — metadata (Feature Name, URL, Created By, Created Date)
+2. **SOURCE** — Source Type: "URL Exploration", Source Detail: URL yang dieksplor, Mode: "post-dev (@verified)"
+3. **APPLICATION OVERVIEW** — nama app, URL, deskripsi dari hasil eksplorasi, platform, environment
+4. **TEST CASE STATUS** — ringkasan status (semua `untested` di awal)
+5. **TEST CASE LIST** — daftar test case bernomor (1, 2, 3, ...)
 
-  @negative @verified
-  Scenario: [Error state yang diobservasi]
-    Given [kondisi awal aktual]
-    When [aksi dengan input tidak valid]
-    Then [pesan error aktual yang muncul]
-    # Note: Pesan error: "[teks error dari screenshot]"
+Lihat template lengkap di `output-format.md#md-word-format`.
 
-  @edge-case @verified
-  Scenario: [Edge case yang ditemukan]
-    Given [kondisi batas aktual]
-    When [aksi batas]
-    Then [hasil aktual]
-```
+> Untuk Word (`.docx`), gunakan skill `docx` untuk membuat file Word yang proper.
 
-**Tag tambahan untuk Mode 2:**
-| Tag | Makna |
-|---|---|
-| `@verified` | Divalidasi terhadap produk nyata |
-| `@post-dev` | Dibuat dari eksplorasi browser (Mode 2) |
-| `@ui-only` | Hanya bisa ditest via UI, bukan API |
-| `@needs-auth` | Memerlukan login untuk dijalankan |
-| `@flaky` | Behavior tidak konsisten, perlu dicek ulang |
+**TC ID format:** `TC0001`, `TC0002`, ... (4 digit, auto-increment)
 
 ---
 
@@ -250,16 +240,10 @@ qa-spec dari Mode 1 (dokumen)  vs  hasil eksplorasi Mode 2 (nyata)
 ### Untuk Setiap Scenario di qa-spec:
 ```
 FOUND     → Scenario terverifikasi, ada di produk nyata
-MISSING   → Scenario ada di dokumen, tidak ada di produk (bug? belum implement?)
-DIFFERENT → Behavior berbeda dari yang di dokumen (doc outdated? undocumented change?)
-NEW       → Ada di produk, tidak ada di dokumen (undocumented feature)
+MISSING   → Scenario ada di dokumen, tidak ada di produk
+DIFFERENT → Behavior berbeda dari yang di dokumen
+NEW       → Ada di produk, tidak ada di dokumen
 ```
-
-### Confidence Level:
-- **Confirmed** — kamu melihat langsung behavior-nya
-- **Likely missing** — sudah cari tapi tidak ketemu, mungkin di halaman lain
-- **Possibly different** — mirip tapi ada perbedaan minor
-- **Needs manual confirmation** — terlalu kompleks untuk ditest otomatis (payment, email verification, dll)
 
 Lihat format gap report di `output-format.md#gap-report`.
 
@@ -269,7 +253,6 @@ Lihat format gap report di `output-format.md#gap-report`.
 
 ### Update / Buat qa-spec JSON:
 
-Jika ada qa-spec lama → update dengan field baru:
 ```json
 {
   "feature": "[nama]",
@@ -277,6 +260,7 @@ Jika ada qa-spec lama → update dengan field baru:
   "pre_dev_ref": "qa-spec-[nama]-predev.json",
   "explored_at": "[ISO timestamp]",
   "url": "[URL yang dieksplor]",
+  "output_format": "[xlsx / docx / md]",
   "scenarios": [...],
   "gap_summary": {
     "total_predev": 12,
@@ -294,8 +278,8 @@ Jika ada qa-spec lama → update dengan field baru:
 ✅ Mode 2 (Post-Dev) selesai
 
 🌐 URL yang dieksplor: [URL]
+📊 Format output: [Excel / Word / Markdown]
 🔐 Auth: [berhasil login / tanpa auth / skip]
-⏱️  Durasi eksplorasi: ~[N] menit
 
 📊 Temuan:
    • Halaman/view ditemukan: [N]
@@ -309,7 +293,7 @@ Jika ada qa-spec lama → update dengan field baru:
    • Edge case: [N]
 
 📁 File yang dibuat/diupdate:
-   • [nama]-verified.feature
+   • [nama]-tc.[xlsx/docx/md]
    • qa-spec-[nama].json
 
 [Jika ada gap analysis:]

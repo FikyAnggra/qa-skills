@@ -1,8 +1,8 @@
 ---
 name: qa-explorer
-version: 1.0.0
+version: 1.1.0
 description: |
-  QA Testing skill dengan tiga mode: (1) Pre-dev — analisis PRD/dokumen dan generate test case @unverified TANPA melihat produk nyata; (2) Post-dev — buka browser, navigasi URL, eksplorasi klik elemen, lalu generate test case @verified berdasarkan perilaku produk nyata; (3) Gap only — bandingkan dua file test case dan buat gap report. Gunakan skill ini ketika user menyebut: test case, test plan, QA, testing, buat skenario test, exploratory testing, regression test, smoke test, happy path, negative test, edge case, generate test, analisis PRD untuk testing, verifikasi fitur, cek UI, coba login, buka url dan test, browser testing, playwright, cek flow, alur user, user journey, acceptance criteria, BDD, gherkin, given when then, qa-explorer, explore app, jelajahi aplikasi, gap test, test coverage, missing test, bandingkan test case.
+  QA Testing skill dengan tiga mode: (1) Pre-dev — analisis PRD/dokumen dan generate test case @unverified TANPA melihat produk nyata; (2) Post-dev — buka browser, navigasi URL, eksplorasi klik elemen, lalu generate test case @verified berdasarkan perilaku produk nyata; (3) Gap only — bandingkan dua file test case dan buat gap report. Output tersedia dalam format Excel (.xlsx), Word (.docx), dan Markdown (.md). Gunakan skill ini ketika user menyebut: test case, test plan, QA, testing, buat skenario test, exploratory testing, regression test, smoke test, happy path, negative test, edge case, generate test, analisis PRD untuk testing, verifikasi fitur, cek UI, coba login, buka url dan test, browser testing, playwright, cek flow, alur user, user journey, acceptance criteria, BDD, gherkin, given when then, qa-explorer, explore app, jelajahi aplikasi, gap test, test coverage, missing test, bandingkan test case.
 author: tim-kamu
 compatibility:
   - claude-code
@@ -46,17 +46,22 @@ metadata:
     - browser-automation
     - test-case-generator
     - exploratory-testing
-    - gherkin
-    - bdd
+    - excel
+    - word
+    - markdown
   output-files:
-    - "*.feature"
+    - "*.xlsx"
+    - "*.docx"
+    - "*.md"
     - "qa-spec-*.json"
     - "gap-report-*.md"
 ---
 
 # QA Explorer
 
-Skill untuk generate test case secara cerdas — baik dari dokumen (pre-dev) maupun dari eksplorasi browser langsung (post-dev).
+Skill untuk generate test case secara cerdas — baik dari dokumen (pre-dev) maupun dari eksplorasi browser langsung (post-dev). Output tersedia dalam format **Excel**, **Word**, atau **Markdown**.
+
+---
 
 ## Deteksi Mode
 
@@ -74,6 +79,86 @@ Tentukan mode berdasarkan input user:
 
 ---
 
+## ⚠️ WAJIB: Tanyakan Format Output
+
+**Sebelum mulai generate test case (Mode 1 atau Mode 2)**, jika user TIDAK menyebutkan format output, **WAJIB tanyakan** terlebih dahulu:
+
+```
+Test case-nya mau dalam format apa? Pilihan yang tersedia:
+
+1. 📊 Excel (.xlsx)
+   Format tabel profesional dengan Test Case Information, Test Case Status,
+   dan Test Case Table. Cocok untuk tracking status & kolaborasi tim QA.
+
+2. 📝 Word (.docx)
+   Dokumen formal dengan Test Case Information, Source, Application Overview,
+   Test Case Status, dan Test Case List bernomor. Cocok untuk review stakeholder.
+
+3. 📄 Markdown (.md)
+   Format teks ringan dengan struktur yang sama seperti Word — Test Case Information,
+   Source, Application Overview, Test Case Status, dan Test Case List bernomor.
+   Cocok untuk developer, GitHub, atau dokumentasi teknis.
+
+Ketik angka (1/2/3) atau nama formatnya.
+```
+
+**Jangan mulai generate sebelum user memilih format.**
+
+> **Exception:** Jika user sudah menyebut format secara eksplisit (misal: "buat dalam Excel", "output xlsx", "format markdown", "word doc"), langsung gunakan format tersebut **tanpa bertanya lagi**.
+
+---
+
+## Format Output yang Tersedia
+
+Setiap format memiliki **struktur berbeda** yang disesuaikan dengan kegunaannya:
+
+### 📊 Format Excel (`.xlsx`)
+
+Struktur **3 sections** dalam 1 sheet:
+
+```
+┌─────────────────────────────────┐
+│  1. TEST CASE INFORMATION       │  ← Metadata dokumen
+├─────────────────────────────────┤
+│  2. TEST CASE STATUS            │  ← Ringkasan status (COUNTIF formula)
+├─────────────────────────────────┤
+│  3. TEST CASE TABLE             │  ← Tabel utama semua test case
+└─────────────────────────────────┘
+```
+
+Cocok untuk: manajemen TC tim, tracking status eksekusi, referensi automation.
+
+---
+
+### 📝 Format Word (`.docx`) dan 📄 Format Markdown (`.md`)
+
+Struktur **5 sections** dengan daftar test case bernomor:
+
+```
+┌─────────────────────────────────┐
+│  1. TEST CASE INFORMATION       │  ← Metadata dokumen
+├─────────────────────────────────┤
+│  2. SOURCE                      │  ← Asal test case (PRD/URL/dll)
+├─────────────────────────────────┤
+│  3. APPLICATION OVERVIEW        │  ← Deskripsi singkat aplikasi
+├─────────────────────────────────┤
+│  4. TEST CASE STATUS            │  ← Ringkasan status (hitungan manual)
+├─────────────────────────────────┤
+│  5. TEST CASE LIST              │  ← Daftar test case bernomor (1, 2, 3...)
+└─────────────────────────────────┘
+```
+
+Cocok untuk: dokumentasi formal, review stakeholder, developer documentation.
+
+---
+
+Lihat template lengkap di:
+```
+@references/output-format.md
+```
+
+---
+
 ## Mode 1 — Pre-Dev (Dokumen → Test Case @unverified)
 
 Aktifkan ketika input berupa dokumen/teks spesifikasi tanpa URL.
@@ -82,8 +167,6 @@ Baca instruksi lengkap dari:
 ```
 @references/mode-predev.md
 ```
-
-**Output:** File `.feature` dengan tag `@unverified` + file `qa-spec-[nama].json`.
 
 ---
 
@@ -96,7 +179,6 @@ Baca instruksi lengkap dari:
 @references/mode-postdev.md
 ```
 
-**Output:** File `.feature` dengan tag `@verified` + update/buat `qa-spec-[nama].json`.  
 **Bonus otomatis:** Jika ada `qa-spec-*.json` dari Mode 1, otomatis tambahkan gap report.
 
 ---
@@ -113,53 +195,6 @@ Baca instruksi lengkap dari:
 ```
 
 **Output:** File `gap-report-[nama]-[tanggal].md`.
-
----
-
-## Format Output Default
-
-Semua test case ditulis dalam format **Gherkin (Given-When-Then)** kecuali user minta format lain.
-
-Format yang didukung:
-
-| Flag | Format | Output | Kapan digunakan |
-|------|--------|--------|-----------------|
-| *(default)* | Gherkin / BDD | `*.feature` | CI/CD, Cucumber, BDD framework |
-| `--format table` | **Tabel Markdown** | `*.md` | Review di chat, dokumentasi ringan |
-| `--format xlsx` | **Excel (5 sections)** | `*.xlsx` | **Manajemen TC profesional, tracking status, referensi automation** |
-| `--format steps` | Plain Steps | `*.md` | Tim non-technical, manual testing sederhana |
-| `--format playwright` | Playwright TypeScript | `*.spec.ts` | Langsung jadi script automation |
-
-> **Rekomendasi:** Gunakan `--format xlsx` untuk output yang paling lengkap — mencakup Test Case Information, Source, Application Overview, Status Summary, dan Test Case Table dalam satu file Excel yang bisa langsung digunakan sebagai dokumen QA resmi.
-
-### Format Excel (`--format xlsx`) — Struktur Lengkap
-
-Output Excel terdiri dari 5 sections berurutan dalam 1 sheet:
-
-```
-1. TEST CASE INFORMATION  ← metadata dokumen (Feature Name, Created By, dll)
-2. SOURCE                 ← asal test case (PRD / URL / dll)
-3. APPLICATION OVERVIEW   ← deskripsi singkat aplikasi
-4. TEST CASE STATUS       ← ringkasan status (auto-count via COUNTIF)
-5. TEST CASE TABLE        ← tabel utama semua test case
-```
-
-**Kolom Test Case Table:**
-`TC ID` | `Scenario` | `Summary` | `Priority` | `Pre-Conditions` | `Test Step` | `Test Data` | `Expected Result` | `Actual Result` | `Test Case Status` | `Automation Status` | `Notes`
-
-**TC ID format:** `TC0001`, `TC0002`, ... (4 digit, auto-increment)  
-**Priority:** `P1 - High` / `P2 - Medium` / `P3 - Low`  
-**Test Case Status:** `untested` (default) / `passed` / `onprogress` / `blocked` / `failed` / `retest`  
-**Automation Status:** ditentukan berdasarkan **analisis** — tidak semua TC perlu automation:
-- `automated` — sudah ada script
-- `to be automated` — kandidat automation (flow repetitif, regression)
-- `in progress` — script sedang dibuat
-- `manual only` — tidak layak diotomasi (visual, eksternal sistem, jarang dirun)
-
-Lihat template lengkap dan panduan penentuan status di:
-```
-@references/output-format.md#table-format
-```
 
 ---
 
@@ -198,7 +233,9 @@ Skill ini menggunakan file `qa-spec-[nama].json` untuk menyimpan state antar ses
 
 ```
 qa-spec-login.json        ← dari Mode 1 (pre-dev)
-login.feature             ← test case @unverified
+login-tc.xlsx             ← test case Excel (Mode 1/2)
+login-tc.docx             ← test case Word (Mode 1/2)
+login-tc.md               ← test case Markdown (Mode 1/2)
 gap-report-login-2026.md  ← dari Mode 2 atau Mode 3
 ```
 
@@ -213,8 +250,9 @@ Deteksi otomatis:
 
 Gunakan nama fitur sebagai basis nama file:
 - `qa-spec-[fitur].json` (misal: `qa-spec-checkout.json`)
-- `[fitur]-unverified.feature` (misal: `checkout-unverified.feature`)
-- `[fitur]-verified.feature` (misal: `checkout-verified.feature`)
+- `[fitur]-tc.xlsx` (misal: `checkout-tc.xlsx`)
+- `[fitur]-tc.docx` (misal: `checkout-tc.docx`)
+- `[fitur]-tc.md` (misal: `checkout-tc.md`)
 - `gap-report-[fitur]-[YYYY-MM-DD].md`
 
 Tanya user untuk nama fitur jika tidak jelas dari konteks.
